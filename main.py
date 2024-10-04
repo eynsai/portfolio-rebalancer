@@ -32,7 +32,8 @@ constraint_power = 6
 
 # Debug config
 extra_verbose = False
-use_cache = True
+read_cache = False
+write_cache = False
 use_defaults = False
 default_selling_strategy = 4
 
@@ -267,21 +268,23 @@ def main():
 
     accounts, symbols = load_config()
 
-    if not use_cache:
+    if not read_cache:
         q = get_questrade_api()
         exchange_rate = get_exchange_rate()
-        with open("exchange_rate.json", "w") as f:
-            json.dump({"exchange_rate": exchange_rate}, f)
+        if write_cache:
+            with open("exchange_rate.json", "w") as f:
+                json.dump({"exchange_rate": exchange_rate}, f)
     else:
         with open("exchange_rate.json", "r") as f:
             exchange_rate = json.load(f)["exchange_rate"]
 
     # load accounts to check if they're all there
     print("Loading accounts.")
-    if not use_cache:
+    if not read_cache:
         q_accounts = q.accounts
-        with open("accounts.json", "w") as f:
-            json.dump(q_accounts, f)
+        if write_cache:
+            with open("accounts.json", "w") as f:
+                json.dump(q_accounts, f)
     else:
         with open("accounts.json", "r") as f:
             q_accounts = json.load(f)
@@ -297,19 +300,20 @@ def main():
 
     # load positions
     print("Loading positions.")
-    positions = []
+    if not read_cache:
+        positions_dict = {account_number: q.account_positions(int(account_number)) for account_number in accounts["account_number"]}
+        if write_cache:
+            with open(f"positions.json", "w") as f:
+                json.dump(positions_dict, f)
+    else:
+        with open(f"positions.json", "r") as f:
+            positions_dict = json.load(f)
+    positions_list = []
     for account_number in accounts["account_number"]:
-        if not use_cache:
-            account_positions = q.account_positions(int(account_number))
-            with open(f"positions_{account_number}.json", "w") as f:
-                json.dump(account_positions, f)
-        else:
-            with open(f"positions_{account_number}.json", "r") as f:
-                account_positions = json.load(f)
-        account_positions = pd.DataFrame(account_positions["positions"])
-        account_positions["account_number"] = account_number
-        positions.append(account_positions)
-    positions = pd.concat(positions)
+        df = pd.DataFrame(positions_dict[account_number]["positions"])
+        df["account_number"] = account_number
+        positions_list.append(df)
+    positions = pd.concat(positions_list)
     positions = positions[positions["symbol"].isin(symbols["symbol"])]
     positions = positions[["symbol", "account_number", "currentMarketValue", "openQuantity", "averageEntryPrice"]]
     positions["cost"] = positions["openQuantity"] * positions["averageEntryPrice"]
@@ -321,7 +325,7 @@ def main():
     positions = positions.fillna(0)
     
     # collect info about symbols
-    if not use_cache:
+    if not read_cache:
         symbol_infos = {}
         for symbol in symbols["symbol"]:
             symbol_info = {}
@@ -346,8 +350,9 @@ def main():
             else:
                 symbol_info["price"] = (result["bidPrice"] + result["askPrice"]) / 2
             symbol_infos[symbol] = symbol_info
-        with open("symbol_infos.json", "w") as f:
-            json.dump(symbol_infos, f)
+        if write_cache:
+            with open("symbol_infos.json", "w") as f:
+                json.dump(symbol_infos, f)
     else:
         with open("symbol_infos.json", "r") as f:
             symbol_infos = json.load(f)
