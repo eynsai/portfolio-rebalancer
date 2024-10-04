@@ -11,18 +11,6 @@ Currently, it only supports the use of the Questrade API. I'd like to refactor t
 
 ## Usage
 
-### Setup
-
 ```
-python -m venv portfolio-rebalancer
-source portfolio-rebalancer/bin/activate
-pip install -r requirements.txt
+./start.sh
 ```
-
-### Running
-
-```
-source portfolio-rebalancer/bin/activate
-python main.py
-```
-
