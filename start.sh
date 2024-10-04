@@ -8,7 +8,7 @@ fi
 source "$VENV_DIR/bin/activate"
 
 REQUIREMENTS_FILE="$SCRIPT_DIR/requirements.txt"
-yes | pip install -q -r "$REQUIREMENTS_FILE"
+pip install -q -q -r "$REQUIREMENTS_FILE"
 
 PYTHON_SCRIPT="$SCRIPT_DIR/main.py"
 python "$PYTHON_SCRIPT"

@@ -11,6 +11,13 @@ Currently, it only supports the use of the Questrade API. I'd like to refactor t
 
 ## Usage
 
-```
-./start.sh
-```
+### Linux
+
+`./start.sh` will create and activate the necessary python virtual environment, then run the calculator.
+
+### Windows PowerShell
+
+`.\start.ps1` will create and activate the necessary python virtual environment, then run the calculator.
+
+You may need to first relax PowerShell script execution restrictions using `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`. 
+Be aware that this will reduced in a reduced security level (but it's probably safe if you know what you're doing).
