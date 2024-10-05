@@ -745,15 +745,16 @@ def main():
     print("\n", "=" * 80)
     positions["delta_value"] = delta_values.flatten()
     positions["final_value"] = final_values.flatten()
-    symbols["initial_weight"] = np.sum(initial_values, axis=1) / np.sum(initial_values)
-    symbols["initial_tracking_error"] = symbols["initial_weight"] - symbol_targets_normalized
-    symbols["final_weight"] = np.sum(final_values, axis=1) / np.sum(final_values)
-    symbols["final_tracking_error"] = symbols["final_weight"] - symbol_targets_normalized
-    accounts["contribution"] = np.sum(delta_values, axis=0)
-    positions["initial_subweight"] = (initial_values / np.sum(initial_values, axis=0)).flatten()
-    positions["initial_subtracking_error"] = ((initial_values / np.sum(initial_values, axis=0)) - symbol_targets_normalized[:, None]).flatten()
-    positions["final_subweight"] = (final_values / np.sum(final_values, axis=0)).flatten()
-    positions["final_subtracking_error"] = ((final_values / np.sum(final_values, axis=0)) - symbol_targets_normalized[:, None]).flatten()
+    with np.errstate(divide='ignore'):
+        symbols["initial_weight"] = np.sum(initial_values, axis=1) / np.sum(initial_values)
+        symbols["initial_tracking_error"] = symbols["initial_weight"] - symbol_targets_normalized
+        symbols["final_weight"] = np.sum(final_values, axis=1) / np.sum(final_values)
+        symbols["final_tracking_error"] = symbols["final_weight"] - symbol_targets_normalized
+        accounts["contribution"] = np.sum(delta_values, axis=0)
+        positions["initial_subweight"] = (initial_values / np.sum(initial_values, axis=0)).flatten()
+        positions["initial_subtracking_error"] = ((initial_values / np.sum(initial_values, axis=0)) - symbol_targets_normalized[:, None]).flatten()
+        positions["final_subweight"] = (final_values / np.sum(final_values, axis=0)).flatten()
+        positions["final_subtracking_error"] = ((final_values / np.sum(final_values, axis=0)) - symbol_targets_normalized[:, None]).flatten()
     positions.loc[is_in_usd, ["initial_value", "delta_value", "final_value"]] /= exchange_rate
 
     # Sort positions to be more printable
